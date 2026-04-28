@@ -3,447 +3,251 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบสมาชิก - KidLearning Admin & Permissions</title>
+    <title>KidLearning - ระบบการเรียนรู้ออนไลน์</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap');
-        body {
-            font-family: 'Kanit', sans-serif;
-            background: #f8fafc;
-            min-height: 100vh;
-        }
-        .auth-container {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            width: 100%;
-            max-width: 400px;
-            overflow: hidden;
-        }
-        .hidden-section {
-            display: none !important;
-        }
-        #messageBox {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 25px;
-            border-radius: 10px;
-            color: white;
-            z-index: 1000;
-            display: none;
-            animation: slideIn 0.3s ease-out;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
-        @keyframes slideIn {
-            from { transform: translateX(100%); }
-            to { transform: translateX(0); }
-        }
-        .menu-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .menu-card:not(.locked):hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 15px -6px rgba(0, 0, 0, 0.1);
-        }
-        .term-card-active {
-            border: 4px solid #4f46e5 !important;
-            background-color: #f5f7ff !important;
-            position: relative;
-        }
-        .term-card-active::after {
-            content: "\f058";
-            font-family: "Font Awesome 6 Free";
-            font-weight: 900;
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            color: #4f46e5;
-            font-size: 1.5rem;
-        }
-        .locked {
-            opacity: 0.5;
-            cursor: not-allowed !important;
-            filter: grayscale(0.8);
-            position: relative;
-        }
-        .locked::before {
-            content: "\f023";
-            font-family: "Font Awesome 6 Free";
-            font-weight: 900;
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 1.2rem;
-            color: #ef4444;
-            z-index: 10;
-        }
-        .demo-button {
-            background: linear-gradient(90deg, #FF512F 0%, #DD2476 100%);
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(221, 36, 118, 0.7); }
-            70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(221, 36, 118, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(221, 36, 118, 0); }
-        }
-        .admin-tab-active {
-            border-bottom: 3px solid #4f46e5;
-            color: #4f46e5;
-        }
+        body { font-family: 'Kanit', sans-serif; background: #f8fafc; min-height: 100vh; }
+        .auth-container { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); width: 100%; max-width: 400px; overflow: hidden; }
+        .hidden-section { display: none !important; }
+        #messageBox { position: fixed; top: 20px; right: 20px; padding: 15px 25px; border-radius: 10px; color: white; z-index: 1000; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.2); transition: all 0.3s ease; }
+        .menu-card { transition: all 0.3s ease; }
+        .menu-card:not(.locked):hover { transform: translateY(-8px); box-shadow: 0 15px 25px rgba(0,0,0,0.1); }
+        .locked { opacity: 0.5; cursor: not-allowed !important; filter: grayscale(0.8); position: relative; }
+        .locked::before { content: "\f023"; font-family: "Font Awesome 6 Free"; font-weight: 900; position: absolute; top: 20px; right: 20px; color: #ef4444; }
+        .loader { border-top-color: #3498db; animation: spinner 1.5s linear infinite; }
+        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .admin-tab-active { border-bottom: 3px solid #4f46e5; color: #4f46e5; }
+        .demo-banner { background: linear-gradient(90deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%); transition: transform 0.2s; }
+        .demo-banner:hover { transform: scale(1.01); }
     </style>
 </head>
 <body>
 
     <div id="messageBox"></div>
 
-    <!-- Auth Sections -->
-    <div id="authWrapper" class="auth-container flex-col space-y-6">
-        
-        <!-- Trial/Demo Button Section -->
-        <div class="w-full max-w-[400px] px-4 mb-2 flex justify-center">
-            <button onclick="window.open('https://termfunrobot.github.io/Demo-lenning2026-/', '_blank')" 
-                class="demo-button w-full text-white font-bold py-4 px-6 rounded-2xl shadow-xl flex items-center justify-center space-x-3 transition-all hover:brightness-110 active:scale-95">
-                <i class="fas fa-rocket text-2xl"></i>
-                <div class="text-left">
-                    <div class="text-xs opacity-90 font-light">ไม่ต้องเป็นสมาชิก</div>
-                    <div class="text-lg leading-tight">ทดลองเรียนฟรี! Demo 2026</div>
-                </div>
-                <i class="fas fa-chevron-right ml-auto"></i>
-            </button>
+    <!-- ส่วน Loading -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-[9999] hidden flex items-center justify-center">
+        <div class="bg-white p-5 rounded-2xl flex flex-col items-center">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4"></div>
+            <p class="text-gray-700 font-bold">กำลังประมวลผล...</p>
         </div>
+    </div>
 
-        <div class="glass-card p-8 shadow-2xl">
-            <!-- Login Section -->
+    <!-- ส่วน Authentication -->
+    <div id="authWrapper" class="auth-container">
+        <div class="glass-card p-8">
+            <!-- ส่วนเข้าสู่ระบบ -->
             <div id="loginSection">
-                <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">เข้าสู่ระบบ</h2>
+                <h2 class="text-2xl font-bold text-center mb-8 text-indigo-700">เข้าสู่ระบบ</h2>
                 <form id="loginForm" class="space-y-6">
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                            <i class="fas fa-envelope"></i>
-                        </span>
-                        <input type="email" id="loginEmail" required
-                            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                            placeholder="อีเมลของคุณ">
-                    </div>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                            <i class="fas fa-lock"></i>
-                        </span>
-                        <input type="password" id="loginPassword" required
-                            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                            placeholder="รหัสผ่าน">
-                    </div>
-                    <button type="submit" 
-                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition duration-300 shadow-lg">
-                        เข้าสู่ระบบ
-                    </button>
+                    <input type="email" id="loginEmail" required class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-400 outline-none" placeholder="อีเมล">
+                    <input type="password" id="loginPassword" required class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-400 outline-none" placeholder="รหัสผ่าน">
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition">เข้าสู่ระบบ</button>
                 </form>
-                <div class="mt-6 flex flex-col space-y-3 text-center">
-                    <p class="text-gray-600">
-                        ยังไม่มีบัญชี? 
-                        <a href="#" onclick="toggleSection('register')" class="text-indigo-600 font-semibold hover:underline">ลงทะเบียน</a>
-                    </p>
-                    <button onclick="toggleSection('admin-verify')" class="text-sm text-gray-400 hover:text-gray-600 transition">
-                        <i class="fas fa-user-shield mr-1"></i> สำหรับผู้ดูแลระบบ
-                    </button>
+                <div class="mt-6 text-center space-y-3">
+                    <p class="text-sm text-gray-600">ยังไม่มีบัญชี? <a href="#" onclick="toggleSection('register')" class="text-indigo-600 font-bold">ลงทะเบียน</a></p>
+                    <button onclick="toggleSection('admin-verify')" class="text-xs text-gray-400 hover:text-gray-600">สำหรับผู้ดูแลระบบ</button>
                 </div>
             </div>
 
-            <!-- Admin Verification Section -->
-            <div id="adminVerifySection" class="hidden-section">
-                <h2 class="text-2xl font-bold text-center text-gray-800 mb-2">ยืนยันตัวตนแอดมิน</h2>
-                <p class="text-center text-gray-500 mb-8 text-sm">กรุณากรอกรหัสผ่านเพื่อเข้าสู่ฐานข้อมูล</p>
-                <div class="space-y-4">
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                            <i class="fas fa-key"></i>
-                        </span>
-                        <input type="password" id="adminPasswordInput"
-                            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none"
-                            placeholder="รหัสผ่านแอดมิน">
-                    </div>
-                    <button onclick="checkAdminPassword()" 
-                        class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition duration-300 shadow-lg">
-                        ตกลง
-                    </button>
-                    <button onclick="toggleSection('login')" 
-                        class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold py-2 rounded-xl transition">
-                        ยกเลิก
-                    </button>
-                </div>
+            <!-- ส่วนยืนยันตัวตนแอดมิน -->
+            <div id="adminVerifySection" class="hidden-section text-center">
+                <h2 class="text-xl font-bold mb-6 text-purple-700">ยืนยันสิทธิ์แอดมิน</h2>
+                <input type="password" id="adminPasswordInput" class="w-full px-4 py-3 border rounded-xl mb-4" placeholder="กรอกรหัสผ่านแอดมิน">
+                <button onclick="checkAdminPassword()" class="w-full bg-purple-600 text-white font-bold py-3 rounded-xl">ตกลง</button>
+                <button onclick="toggleSection('login')" class="w-full mt-2 text-gray-500 text-sm">ยกเลิก</button>
             </div>
 
-            <!-- Register Section -->
+            <!-- ส่วนลงทะเบียน -->
             <div id="registerSection" class="hidden-section">
-                <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">สร้างบัญชีใหม่</h2>
+                <h2 class="text-2xl font-bold text-center mb-8 text-green-700">สร้างบัญชีใหม่</h2>
                 <form id="registerForm" class="space-y-4">
-                    <input type="text" id="regName" required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                        placeholder="ชื่อ-นามสกุล">
-                    <input type="email" id="regEmail" required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                        placeholder="อีเมล">
-                    <input type="password" id="regPassword" required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                        placeholder="รหัสผ่าน">
-                    <button type="submit" 
-                        class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition duration-300 shadow-lg">
-                        สมัครสมาชิก
-                    </button>
+                    <div class="space-y-1">
+                        <label class="text-xs text-gray-500 ml-1">ชื่อ-นามสกุล (คอลัมน์ A)</label>
+                        <input type="text" id="regName" required class="w-full px-4 py-3 border rounded-xl" placeholder="ชื่อของคุณ">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs text-gray-500 ml-1">อีเมล (คอลัมน์ B)</label>
+                        <input type="email" id="regEmail" required class="w-full px-4 py-3 border rounded-xl" placeholder="example@email.com">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs text-gray-500 ml-1">กำหนดรหัสผ่าน</label>
+                        <input type="password" id="regPassword" required class="w-full px-4 py-3 border rounded-xl" placeholder="รหัสผ่าน">
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition shadow-lg">สมัครสมาชิก</button>
                 </form>
-                <p class="mt-6 text-center text-gray-600">
-                    มีบัญชีอยู่แล้ว? 
-                    <a href="#" onclick="toggleSection('login')" class="text-indigo-600 font-semibold hover:underline">เข้าสู่ระบบ</a>
-                </p>
+                <p class="mt-6 text-center"><a href="#" onclick="toggleSection('login')" class="text-sm text-indigo-600 font-medium">กลับหน้าเข้าสู่ระบบ</a></p>
             </div>
         </div>
     </div>
 
-    <!-- Admin Dashboard Section -->
-    <div id="adminSection" class="hidden-section min-h-screen bg-gray-100 p-6">
-        <div class="max-w-6xl mx-auto">
-            <div class="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
-                <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-tools mr-2 text-indigo-600"></i>แผงควบคุมระบบ (Admin)</h2>
-                <button onclick="toggleSection('login')" class="bg-white shadow-sm border text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition font-medium">
-                    <i class="fas fa-sign-out-alt mr-2"></i>ออกจากโหมดแอดมิน
-                </button>
-            </div>
-
-            <!-- Admin Tabs -->
-            <div class="flex space-x-6 mb-6 border-b">
-                <button id="tabUsersBtn" onclick="switchAdminTab('users')" class="pb-3 px-4 admin-tab-active font-bold text-gray-800 transition">
-                    <i class="fas fa-users mr-1"></i> จัดการสมาชิกและสิทธิ์
-                </button>
-                <button id="tabUnitsBtn" onclick="switchAdminTab('units')" class="pb-3 px-4 font-bold text-gray-500 hover:text-indigo-600 transition">
-                    <i class="fas fa-book mr-1"></i> จัดการหน่วยการเรียนรู้
-                </button>
-            </div>
-            
-            <!-- TAB 1: Users Management -->
-            <div id="tabContentUsers">
-                <div class="bg-white rounded-2xl shadow-sm overflow-hidden border">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse min-w-[800px]">
-                            <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
-                                <tr>
-                                    <th class="p-4 border-b w-1/4">ข้อมูลผู้ใช้</th>
-                                    <th class="p-4 border-b text-center">สิทธิ์ระดับชั้น (ติ๊กเพื่อเปิดให้เข้าเรียน)</th>
-                                    <th class="p-4 border-b text-center w-20">จัดการ</th>
-                                </tr>
-                            </thead>
-                            <tbody id="userTableBody">
-                                <!-- Data injected here -->
-                            </tbody>
-                        </table>
-                    </div>
-                    <div id="emptyUserState" class="p-10 text-center text-gray-400 hidden">
-                        <i class="fas fa-users-slash text-4xl mb-3"></i>
-                        <p>ยังไม่มีข้อมูลผู้สมัครสมาชิก</p>
-                    </div>
-                </div>
-                
-                <div class="mt-6 flex flex-wrap justify-end gap-4">
-                    <button onclick="exportData()" class="bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition shadow-md">
-                        <i class="fas fa-file-export mr-2"></i>ส่งออกข้อมูลผู้ใช้
-                    </button>
-                    <button onclick="clearAllData()" class="bg-red-50 text-red-600 px-6 py-2 rounded-xl hover:bg-red-100 transition border border-red-200">
-                        <i class="fas fa-trash-alt mr-2"></i>ล้างข้อมูลทั้งหมด
-                    </button>
-                </div>
-            </div>
-
-            <!-- TAB 2: Units Management -->
-            <div id="tabContentUnits" class="hidden-section">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Unit Form -->
-                    <div class="lg:col-span-1">
-                        <div class="bg-white p-6 rounded-2xl border shadow-sm sticky top-6">
-                            <h3 class="text-xl font-bold mb-4 text-gray-800" id="unitFormTitle">เพิ่มหน่วยการเรียนรู้</h3>
-                            <div class="space-y-4">
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">ชื่อหน่วยการเรียนรู้</label>
-                                    <input type="text" id="unitName" placeholder="เช่น บทที่ 1 การบวกเลข" class="w-full p-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">ระดับชั้น / เทอม</label>
-                                    <select id="unitTerm" class="w-full p-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
-                                        <option value="term1">อนุบาล 1 เทอม 1</option>
-                                        <option value="term2">อนุบาล 1 เทอม 2</option>
-                                        <option value="term3">อนุบาล 2 เทอม 1</option>
-                                        <option value="term4">อนุบาล 2 เทอม 2</option>
-                                        <option value="term5">อนุบาล 3 เทอม 1</option>
-                                        <option value="term6">อนุบาล 3 เทอม 2</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">ลิงก์เข้าเรียน (URL)</label>
-                                    <input type="url" id="unitLink" placeholder="https://..." class="w-full p-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
-                                </div>
-                                <div id="unitActionBtns" class="pt-2">
-                                    <button onclick="saveUnit()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-md transition">บันทึกข้อมูล</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Units Table -->
-                    <div class="lg:col-span-2">
-                        <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
-                            <table class="w-full text-left">
-                                <thead class="bg-gray-50 border-b text-xs font-bold text-gray-500 uppercase">
-                                    <tr>
-                                        <th class="px-6 py-4">ชื่อหน่วยการเรียนรู้</th>
-                                        <th class="px-6 py-4">เทอม</th>
-                                        <th class="px-6 py-4 text-center">จัดการ</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="unitTableBody">
-                                    <!-- Units Injected Here -->
-                                </tbody>
-                            </table>
-                            <div id="emptyUnitState" class="p-10 text-center text-gray-400 hidden">
-                                <i class="fas fa-book-open text-4xl mb-3"></i>
-                                <p>ยังไม่มีหน่วยการเรียนรู้ในระบบ</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-    <!-- Main Content Section (App) -->
+    <!-- ส่วน Dashboard นักเรียน -->
     <div id="mainContent" class="hidden-section">
         <nav class="bg-white shadow-sm px-6 py-4 flex justify-between items-center sticky top-0 z-50">
-            <div class="flex items-center space-x-2">
-                <div class="bg-indigo-600 p-2 rounded-lg"><i class="fas fa-graduation-cap text-white text-lg"></i></div>
-                <span class="text-xl font-bold text-gray-800">KidLearning</span>
-            </div>
+            <span class="text-xl font-bold text-indigo-600"><i class="fas fa-graduation-cap mr-2"></i>KidLearning</span>
             <div class="flex items-center space-x-4">
-                <span id="userNameDisplay" class="hidden sm:block text-gray-600 font-medium"></span>
-                <button onclick="logout()" class="bg-red-50 text-red-500 hover:bg-red-100 px-4 py-2 rounded-xl font-semibold flex items-center space-x-1 transition">
-                    <i class="fas fa-sign-out-alt"></i><span>ออก</span>
-                </button>
+                <span id="userNameDisplay" class="text-gray-600 font-medium text-sm"></span>
+                <button onclick="logout()" class="text-red-500 text-sm font-bold hover:underline">ออกจากระบบ</button>
             </div>
         </nav>
-
+        
         <div class="max-w-6xl mx-auto p-6 md:p-10">
-            
-            <!-- Term Selection Grid -->
-            <div id="termSelectionContainer">
-                <div class="mb-12">
-                    <h1 class="text-3xl font-bold text-gray-800">แผงควบคุมการเรียนรู้ 🎒</h1>
-                    <p class="text-gray-500 mt-2 text-lg">เลือกระดับชั้นและเทอม เพื่อเข้าสู่บทเรียนที่คุณได้รับอนุญาต</p>
-                </div>
+            <!-- ส่วนหน้าทดลองเรียนที่เพิ่มใหม่ -->
+            <div id="demoSection" class="mb-10">
+                <a href="https://termfunrobot.github.io/Demo-lenning2026-/" target="_blank" class="demo-banner block p-6 rounded-3xl shadow-md border-b-4 border-pink-200">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="bg-white p-3 rounded-2xl shadow-sm text-pink-500 text-2xl">
+                                <i class="fas fa-rocket"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-800">ทดลองเรียนฟรี! (Demo)</h3>
+                                <p class="text-sm text-gray-600">สัมผัสประสบการณ์การเรียนรู้รูปแบบใหม่ได้ที่นี่</p>
+                            </div>
+                        </div>
+                        <div class="hidden md:block">
+                            <span class="bg-pink-500 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-sm">เข้าชมตอนนี้ <i class="fas fa-chevron-right ml-1"></i></span>
+                        </div>
+                    </div>
+                </a>
+            </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-                    <div id="card-term1" onclick="selectTerm(this, 'term1', 'อนุบาล 1 เทอม 1')" class="term-card menu-card bg-white p-8 rounded-[2rem] border-2 border-gray-100 cursor-pointer flex flex-col items-center justify-center text-center shadow-sm">
-                        <div class="w-24 h-24 bg-yellow-100 rounded-3xl flex items-center justify-center mb-6 text-yellow-600 shadow-inner"><i class="fas fa-baby text-5xl"></i></div>
-                        <h3 class="text-2xl font-bold text-gray-800 mb-2">อ.1 เทอม 1</h3>
-                        <p class="text-gray-500 font-light">ก้าวแรกสู่การเรียนรู้</p>
-                    </div>
-                    <div id="card-term2" onclick="selectTerm(this, 'term2', 'อนุบาล 1 เทอม 2')" class="term-card menu-card bg-white p-8 rounded-[2rem] border-2 border-gray-100 cursor-pointer flex flex-col items-center justify-center text-center shadow-sm">
-                        <div class="w-24 h-24 bg-green-100 rounded-3xl flex items-center justify-center mb-6 text-green-600 shadow-inner"><i class="fas fa-puzzle-piece text-5xl"></i></div>
-                        <h3 class="text-2xl font-bold text-gray-800 mb-2">อ.1 เทอม 2</h3>
-                        <p class="text-gray-500 font-light">สนุกกับแก้ปัญหา</p>
-                    </div>
-                    <div id="card-term3" onclick="selectTerm(this, 'term3', 'อนุบาล 2 เทอม 1')" class="term-card menu-card bg-white p-8 rounded-[2rem] border-2 border-gray-100 cursor-pointer flex flex-col items-center justify-center text-center shadow-sm">
-                        <div class="w-24 h-24 bg-blue-100 rounded-3xl flex items-center justify-center mb-6 text-blue-600 shadow-inner"><i class="fas fa-pencil-ruler text-5xl"></i></div>
-                        <h3 class="text-2xl font-bold text-gray-800 mb-2">อ.2 เทอม 1</h3>
-                        <p class="text-gray-500 font-light">สร้างสรรค์งานเขียน</p>
-                    </div>
-                    <div id="card-term4" onclick="selectTerm(this, 'term4', 'อนุบาล 2 เทอม 2')" class="term-card menu-card bg-white p-8 rounded-[2rem] border-2 border-gray-100 cursor-pointer flex flex-col items-center justify-center text-center shadow-sm">
-                        <div class="w-24 h-24 bg-indigo-100 rounded-3xl flex items-center justify-center mb-6 text-indigo-600 shadow-inner"><i class="fas fa-globe-asia text-5xl"></i></div>
-                        <h3 class="text-2xl font-bold text-gray-800 mb-2">อ.2 เทอม 2</h3>
-                        <p class="text-gray-500 font-light">เรียนรู้สิ่งรอบตัว</p>
-                    </div>
-                    <div id="card-term5" onclick="selectTerm(this, 'term5', 'อนุบาล 3 เทอม 1')" class="term-card menu-card bg-white p-8 rounded-[2rem] border-2 border-gray-100 cursor-pointer flex flex-col items-center justify-center text-center shadow-sm">
-                        <div class="w-24 h-24 bg-purple-100 rounded-3xl flex items-center justify-center mb-6 text-purple-600 shadow-inner"><i class="fas fa-flask text-5xl"></i></div>
-                        <h3 class="text-2xl font-bold text-gray-800 mb-2">อ.3 เทอม 1</h3>
-                        <p class="text-gray-500 font-light">ทดลองวิทยาศาสตร์</p>
-                    </div>
-                    <div id="card-term6" onclick="selectTerm(this, 'term6', 'อนุบาล 3 เทอม 2')" class="term-card menu-card bg-white p-8 rounded-[2rem] border-2 border-gray-100 cursor-pointer flex flex-col items-center justify-center text-center shadow-sm">
-                        <div class="w-24 h-24 bg-red-100 rounded-3xl flex items-center justify-center mb-6 text-red-600 shadow-inner"><i class="fas fa-graduation-cap text-5xl"></i></div>
-                        <h3 class="text-2xl font-bold text-gray-800 mb-2">อ.3 เทอม 2</h3>
-                        <p class="text-gray-500 font-light">พร้อมก้าวสู่ประถม</p>
+            <div id="termSelectionContainer">
+                <h1 class="text-2xl font-bold text-gray-800 mb-8">บทเรียนของฉัน</h1>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" id="termCardsGrid"></div>
+            </div>
+
+            <div id="contentDashboard" class="hidden-section">
+                <div class="flex items-center justify-between mb-8 border-b pb-4">
+                    <h2 class="text-2xl font-bold text-indigo-700" id="currentTermView"></h2>
+                    <button onclick="backToTerms()" class="text-gray-500 hover:text-gray-800 flex items-center bg-gray-100 px-4 py-2 rounded-lg">
+                        <i class="fas fa-arrow-left mr-2"></i> กลับ
+                    </button>
+                </div>
+                <div id="dynamicUnitGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+                <div id="noUnitsMsg" class="hidden text-center py-20 text-gray-400 bg-white rounded-3xl border border-dashed">
+                    <i class="fas fa-folder-open text-5xl mb-4 block"></i>
+                    ยังไม่มีบทเรียนในระดับนี้
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ส่วน Dashboard ผู้ดูแลระบบ (Admin) -->
+    <div id="adminSection" class="hidden-section min-h-screen bg-gray-100 p-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-user-shield mr-2"></i>แผงจัดการข้อมูล</h2>
+                <button onclick="logout()" class="bg-white px-6 py-2 rounded-xl border font-bold text-red-500 hover:bg-red-50 transition shadow-sm">ออกจากระบบ</button>
+            </div>
+            
+            <div class="flex space-x-6 mb-6 border-b">
+                <button onclick="switchAdminTab('users')" id="tabUsersBtn" class="pb-3 px-4 admin-tab-active font-bold transition">สมาชิก</button>
+                <button onclick="switchAdminTab('units')" id="tabUnitsBtn" class="pb-3 px-4 font-bold text-gray-500 transition">หน่วยการเรียน</button>
+            </div>
+            
+            <!-- ตารางจัดการผู้ใช้ -->
+            <div id="tabContentUsers">
+                <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50 text-xs uppercase text-gray-500 border-b">
+                                <tr>
+                                    <th class="p-4">ชื่อ (Col A)</th>
+                                    <th class="p-4">อีเมล (Col B)</th>
+                                    <th class="p-4 text-center">สิทธิ์การเข้าถึงระดับชั้น</th>
+                                    <th class="p-4 text-center">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userTableBody"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Dynamic Unit Dashboard (Shows after selecting a term) -->
-            <section id="contentDashboard" class="hidden-section">
-                <header class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4 border-b pb-4">
-                    <div>
-                        <h2 class="text-3xl font-bold text-indigo-700" id="currentTermView">อนุบาล 1 เทอม 1</h2>
-                        <p class="text-gray-500 mt-1">เลือกหน่วยการเรียนรู้ที่คุณต้องการเข้าศึกษา</p>
+            <!-- ส่วนจัดการหน่วยการเรียน -->
+            <div id="tabContentUnits" class="hidden-section">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-2xl border shadow-sm">
+                        <h3 class="font-bold mb-4 text-indigo-700">เพิ่มบทเรียนใหม่</h3>
+                        <div class="space-y-3">
+                            <input type="text" id="unitName" placeholder="ชื่อหน่วยการเรียน" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-indigo-300">
+                            <select id="unitTerm" class="w-full p-3 border rounded-xl">
+                                <option value="term1">อ.1 เทอม 1</option><option value="term2">อ.1 เทอม 2</option>
+                                <option value="term3">อ.2 เทอม 1</option><option value="term4">อ.2 เทอม 2</option>
+                                <option value="term5">อ.3 เทอม 1</option><option value="term6">อ.3 เทอม 2</option>
+                            </select>
+                            <input type="url" id="unitLink" placeholder="ลิงก์บทเรียน (https://...)" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-indigo-300">
+                            <button onclick="saveUnitGS()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition">บันทึกข้อมูล</button>
+                        </div>
                     </div>
-                    <button onclick="backToTerms()" class="bg-white border-2 border-gray-200 text-gray-600 px-5 py-2 rounded-xl hover:bg-gray-50 font-bold transition">
-                        <i class="fas fa-arrow-left mr-2"></i>กลับหน้าระดับชั้น
-                    </button>
-                </header>
-
-                <div id="dynamicUnitGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <!-- Dynamic Units will be injected here -->
+                    <div class="lg:col-span-2 bg-white rounded-2xl border shadow-sm overflow-hidden">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50 font-bold text-gray-500 border-b">
+                                <tr>
+                                    <th class="p-4">ชื่อหน่วย</th>
+                                    <th class="p-4">ระดับชั้น</th>
+                                    <th class="p-4 text-center">ลบ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="unitTableBody"></tbody>
+                        </table>
+                    </div>
                 </div>
-
-                <div id="noUnitsMsg" class="hidden-section text-center py-16 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
-                    <i class="fas fa-folder-open text-5xl text-gray-300 mb-4"></i>
-                    <h3 class="text-xl font-bold text-gray-500">ยังไม่มีหน่วยการเรียนรู้ในระดับชั้นนี้</h3>
-                    <p class="text-gray-400 mt-2">โปรดรอคุณครูเพิ่มบทเรียน หรือติดต่อแอดมิน</p>
-                </div>
-            </section>
+            </div>
         </div>
     </div>
 
     <script>
-        // --- Data Definitions ---
-        let users = JSON.parse(localStorage.getItem('web_users')) || [];
-        let units = JSON.parse(localStorage.getItem('web_units')) || []; // Unit Database
-        let currentUser = null;
-        let editingUnitId = null;
-
-        const ADMIN_PASSWORD = "1471200";
+        /** * สำคัญ: เปลี่ยน URL เป็น Web App URL ที่คุณได้จากการ Deploy Google Apps Script 
+         */
+        const scriptUrl = "https://script.google.com/macros/s/AKfycbxb-_8rUTnHm8QY-UsDtLRo6_arTAObp4WCa8cFliJAanRj68zU1QMss2QwfXz6cV7w/exec"; 
 
         const TERMS = [
-            { id: 'term1', name: 'อ.1 เทอม 1' },
-            { id: 'term2', name: 'อ.1 เทอม 2' },
-            { id: 'term3', name: 'อ.2 เทอม 1' },
-            { id: 'term4', name: 'อ.2 เทอม 2' },
-            { id: 'term5', name: 'อ.3 เทอม 1' },
-            { id: 'term6', name: 'อ.3 เทอม 2' },
+            { id: 'term1', name: 'อ.1 เทอม 1', icon: 'fa-child', color: 'bg-yellow-100 text-yellow-600' },
+            { id: 'term2', name: 'อ.1 เทอม 2', icon: 'fa-puzzle-piece', color: 'bg-green-100 text-green-600' },
+            { id: 'term3', name: 'อ.2 เทอม 1', icon: 'fa-pencil-ruler', color: 'bg-blue-100 text-blue-600' },
+            { id: 'term4', name: 'อ.2 เทอม 2', icon: 'fa-palette', color: 'bg-indigo-100 text-indigo-600' },
+            { id: 'term5', name: 'อ.3 เทอม 1', icon: 'fa-calculator', color: 'bg-purple-100 text-purple-600' },
+            { id: 'term6', name: 'อ.3 เทอม 2', icon: 'fa-user-graduate', color: 'bg-red-100 text-red-600' },
         ];
 
-        function getTermName(termId) {
-            const term = TERMS.find(t => t.id === termId);
-            return term ? term.name : termId;
+        let currentUser = null;
+
+        async function callApi(params) {
+            showLoading(true);
+            const queryString = new URLSearchParams(params).toString();
+            try {
+                const response = await fetch(`${scriptUrl}?${queryString}`, { method: 'GET' });
+                const result = await response.json();
+                showLoading(false);
+                return result;
+            } catch (error) {
+                showLoading(false);
+                showMessage('ไม่สามารถติดต่อเซิร์ฟเวอร์ได้', 'error');
+                return { status: 'error' };
+            }
         }
 
-        function showMessage(text, type = 'success') {
-            const box = document.getElementById('messageBox');
-            box.innerText = text;
-            box.style.display = 'block';
-            box.style.backgroundColor = type === 'success' ? '#10B981' : '#EF4444';
-            setTimeout(() => { box.style.display = 'none'; }, 2500);
+        function showLoading(show) {
+            document.getElementById('loadingOverlay').classList.toggle('hidden', !show);
         }
 
-        function toggleSection(section) {
-            const sections = ['authWrapper', 'loginSection', 'registerSection', 'mainContent', 'adminSection', 'adminVerifySection'];
-            sections.forEach(s => {
-                const el = document.getElementById(s);
-                if(el) el.classList.add('hidden-section');
-            });
+        function showMessage(msg, type = 'success') {
+            const b = document.getElementById('messageBox');
+            b.innerText = msg;
+            b.style.display = 'block';
+            b.style.backgroundColor = type === 'success' ? '#10B981' : '#EF4444';
+            setTimeout(() => b.style.display = 'none', 3000);
+        }
 
+        window.toggleSection = (section) => {
+            document.querySelectorAll('#authWrapper, #loginSection, #registerSection, #mainContent, #adminSection, #adminVerifySection')
+                .forEach(el => el.classList.add('hidden-section'));
+            
             if (section === 'login') {
                 document.getElementById('authWrapper').classList.remove('hidden-section');
                 document.getElementById('loginSection').classList.remove('hidden-section');
@@ -453,281 +257,197 @@
             } else if (section === 'admin-verify') {
                 document.getElementById('authWrapper').classList.remove('hidden-section');
                 document.getElementById('adminVerifySection').classList.remove('hidden-section');
-                document.getElementById('adminPasswordInput').value = '';
             } else if (section === 'menu') {
-                renderAppInterface();
                 document.getElementById('mainContent').classList.remove('hidden-section');
+                renderTermCards();
             } else if (section === 'admin') {
-                switchAdminTab('users'); // Default tab
                 document.getElementById('adminSection').classList.remove('hidden-section');
+                refreshAdminUsers();
             }
-        }
+        };
 
-        // --- Admin Functions ---
-        function checkAdminPassword() {
-            if (document.getElementById('adminPasswordInput').value === ADMIN_PASSWORD) {
-                showMessage('ยินดีต้อนรับแอดมิน');
+        // --- ระบบ Authentication ---
+
+        document.getElementById('registerForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+
+            const res = await callApi({ action: 'register', name, email, password });
+            if (res.status === 'success') {
+                showMessage('สมัครสมาชิกสำเร็จแล้ว!');
+                toggleSection('login');
+            } else {
+                showMessage(res.message || 'เกิดข้อผิดพลาด', 'error');
+            }
+        };
+
+        document.getElementById('loginForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const res = await callApi({ action: 'login', email, password });
+            if (res.status === 'success') {
+                currentUser = res.data;
+                document.getElementById('userNameDisplay').innerText = currentUser.name;
+                toggleSection('menu');
+            } else {
+                showMessage(res.message || 'อีเมลหรือรหัสผ่านผิด', 'error');
+            }
+        };
+
+        window.checkAdminPassword = () => {
+            const pass = document.getElementById('adminPasswordInput').value;
+            if (pass === "1471200") {
                 toggleSection('admin');
             } else {
-                showMessage('รหัสผ่านไม่ถูกต้อง!', 'error');
+                showMessage('รหัสผ่านแอดมินไม่ถูกต้อง!', 'error');
             }
-        }
+        };
 
-        function switchAdminTab(tabName) {
-            document.getElementById('tabContentUsers').classList.toggle('hidden-section', tabName !== 'users');
-            document.getElementById('tabContentUnits').classList.toggle('hidden-section', tabName !== 'units');
-            
-            const btnUsers = document.getElementById('tabUsersBtn');
-            const btnUnits = document.getElementById('tabUnitsBtn');
-            
-            if (tabName === 'users') {
-                btnUsers.className = "pb-3 px-4 admin-tab-active font-bold text-gray-800 transition";
-                btnUnits.className = "pb-3 px-4 font-bold text-gray-500 hover:text-indigo-600 transition";
-                renderUserTable();
-            } else {
-                btnUnits.className = "pb-3 px-4 admin-tab-active font-bold text-gray-800 transition";
-                btnUsers.className = "pb-3 px-4 font-bold text-gray-500 hover:text-indigo-600 transition";
-                renderUnitTable();
-            }
-        }
+        // --- ระบบ Admin ---
 
-        // --- Admin: Users Management ---
-        function renderUserTable() {
-            const tbody = document.getElementById('userTableBody');
-            tbody.innerHTML = '';
-            document.getElementById('emptyUserState').classList.toggle('hidden', users.length > 0);
-
-            users.forEach((user, index) => {
-                let perms = '<div class="flex flex-wrap justify-center gap-1">';
-                TERMS.forEach(t => {
-                    const isChecked = (user.permissions || []).includes(t.id);
-                    perms += `
-                        <label class="inline-flex items-center bg-gray-50 border px-2 py-1 rounded text-[10px] cursor-pointer hover:bg-indigo-50 transition">
-                            <input type="checkbox" class="mr-1" ${isChecked ? 'checked' : ''} onchange="togglePermission('${user.email}', '${t.id}')">
-                            ${t.name}
-                        </label>
-                    `;
+        async function refreshAdminUsers() {
+            const res = await callApi({ action: 'getUsers' });
+            if (res.status === 'success') {
+                const tbody = document.getElementById('userTableBody');
+                tbody.innerHTML = '';
+                res.data.forEach(u => {
+                    let permHTML = '<div class="flex flex-wrap justify-center gap-1">';
+                    TERMS.forEach(t => {
+                        const checked = u.permissions?.includes(t.id) ? 'checked' : '';
+                        permHTML += `<label class="text-[10px] bg-white border p-1 rounded-lg cursor-pointer hover:bg-gray-50 shadow-xs">
+                            <input type="checkbox" ${checked} onchange="updatePermGS('${u.email}', '${t.id}')"> ${t.name}
+                        </label>`;
+                    });
+                    permHTML += '</div>';
+                    
+                    tbody.innerHTML += `<tr class="border-b hover:bg-gray-50 transition">
+                        <td class="p-4 font-bold text-gray-700">${u.name}</td>
+                        <td class="p-4 text-gray-500">${u.email}</td>
+                        <td class="p-4 text-center">${permHTML}</td>
+                        <td class="p-4 text-center">
+                            <button onclick="deleteUserGS('${u.email}')" class="text-red-400 hover:text-red-600 transition"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    </tr>`;
                 });
-                perms += '</div>';
-
-                tbody.innerHTML += `
-                    <tr class="border-b">
-                        <td class="p-4 font-medium">${user.name}<br><span class="text-xs text-gray-400 font-normal">${user.email}</span></td>
-                        <td class="p-4 text-center">${perms}</td>
-                        <td class="p-4 text-center"><button onclick="deleteUser(${index})" class="text-red-400 hover:text-red-600 transition"><i class="fas fa-trash"></i></button></td>
-                    </tr>
-                `;
-            });
-        }
-
-        function togglePermission(email, termId) {
-            const u = users.find(u => u.email === email);
-            if (u) {
-                if (!u.permissions) u.permissions = [];
-                const idx = u.permissions.indexOf(termId);
-                idx > -1 ? u.permissions.splice(idx, 1) : u.permissions.push(termId);
-                localStorage.setItem('web_users', JSON.stringify(users));
             }
         }
 
-        function deleteUser(i) {
-            if (confirm('ลบผู้ใช้นี้?')) {
-                users.splice(i, 1);
-                localStorage.setItem('web_users', JSON.stringify(users));
-                renderUserTable();
+        window.updatePermGS = async (email, termId) => {
+            await callApi({ action: 'updatePermissions', email, termId });
+            showMessage('อัปเดตสิทธิ์สำเร็จ');
+        };
+
+        window.deleteUserGS = async (email) => {
+            if(confirm(`ต้องการลบผู้ใช้ ${email} ใช่หรือไม่?`)) {
+                await callApi({ action: 'deleteUser', email });
+                refreshAdminUsers();
+                showMessage('ลบผู้ใช้สำเร็จ');
             }
-        }
+        };
 
-        function clearAllData() {
-            if (confirm('ยืนยันการลบข้อมูลสมาชิกทั้งหมด?')) {
-                users = [];
-                localStorage.setItem('web_users', JSON.stringify(users));
-                renderUserTable();
-            }
-        }
-
-        function exportData() {
-            const dataStr = JSON.stringify(users, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'users_data.json';
-            a.click();
-        }
-
-        // --- Admin: Unit Management ---
-        function renderUnitTable() {
-            const tbody = document.getElementById('unitTableBody');
-            tbody.innerHTML = '';
-            document.getElementById('emptyUnitState').classList.toggle('hidden', units.length > 0);
-
-            // เรียงตามเทอม เพื่อง่ายต่อการดู
-            const sortedUnits = [...units].sort((a, b) => a.term.localeCompare(b.term));
-
-            sortedUnits.forEach(u => {
-                tbody.innerHTML += `
-                    <tr class="border-b hover:bg-gray-50 transition">
-                        <td class="px-6 py-4 font-medium text-gray-800">
-                            ${u.name}
-                            <a href="${u.link}" target="_blank" class="block text-xs text-indigo-500 font-normal hover:underline truncate max-w-xs mt-1"><i class="fas fa-link mr-1"></i>${u.link}</a>
+        async function refreshAdminUnits() {
+            const res = await callApi({ action: 'getUnits' });
+            if (res.status === 'success') {
+                const tbody = document.getElementById('unitTableBody');
+                tbody.innerHTML = '';
+                res.data.forEach(u => {
+                    const termLabel = TERMS.find(t => t.id === u.term)?.name || u.term;
+                    tbody.innerHTML += `<tr class="border-b">
+                        <td class="p-4">${u.name}</td>
+                        <td class="p-4 text-indigo-600 font-bold">${termLabel}</td>
+                        <td class="p-4 text-center">
+                            <button onclick="deleteUnitGS('${u.id}')" class="text-red-400 hover:text-red-600 transition"><i class="fas fa-trash-alt"></i></button>
                         </td>
-                        <td class="px-6 py-4 text-sm text-gray-500"><span class="bg-gray-100 px-2 py-1 rounded border">${getTermName(u.term)}</span></td>
-                        <td class="px-6 py-4 text-center space-x-3">
-                            <button onclick="editUnit(${u.id})" class="text-indigo-500 hover:text-indigo-700 transition"><i class="fas fa-edit"></i></button>
-                            <button onclick="deleteUnit(${u.id})" class="text-red-400 hover:text-red-600 transition"><i class="fas fa-trash-alt"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
+                    </tr>`;
+                });
+            }
         }
 
-        function saveUnit() {
-            const name = document.getElementById('unitName').value.trim();
+        window.saveUnitGS = async () => {
+            const name = document.getElementById('unitName').value;
             const term = document.getElementById('unitTerm').value;
-            const link = document.getElementById('unitLink').value.trim();
-
-            if (!name || !link) {
-                showMessage('กรุณากรอกชื่อหน่วยและลิงก์ให้ครบถ้วน', 'error');
-                return;
-            }
-
-            if (editingUnitId) {
-                const u = units.find(x => x.id === editingUnitId);
-                u.name = name; u.term = term; u.link = link;
-                editingUnitId = null;
-                document.getElementById('unitFormTitle').innerText = "เพิ่มหน่วยการเรียนรู้";
-                document.getElementById('unitActionBtns').innerHTML = `<button onclick="saveUnit()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-md transition">บันทึกข้อมูล</button>`;
-            } else {
-                units.push({ id: Date.now(), name, term, link });
-            }
-
-            localStorage.setItem('web_units', JSON.stringify(units));
-            document.getElementById('unitName').value = '';
-            document.getElementById('unitLink').value = '';
+            const link = document.getElementById('unitLink').value;
+            if(!name || !link) return showMessage('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
             
-            renderUnitTable();
-            showMessage('บันทึกข้อมูลสำเร็จ');
-        }
-
-        function editUnit(id) {
-            const u = units.find(x => x.id === id);
-            editingUnitId = id;
-            document.getElementById('unitName').value = u.name;
-            document.getElementById('unitTerm').value = u.term;
-            document.getElementById('unitLink').value = u.link;
-            document.getElementById('unitFormTitle').innerText = "แก้ไขหน่วยการเรียนรู้";
-            
-            document.getElementById('unitActionBtns').innerHTML = `
-                <button onclick="saveUnit()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-md transition mb-2">อัปเดตข้อมูล</button>
-                <button onclick="cancelEditUnit()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-2 rounded-xl transition">ยกเลิก</button>
-            `;
-        }
-
-        function cancelEditUnit() {
-            editingUnitId = null;
-            document.getElementById('unitName').value = '';
-            document.getElementById('unitLink').value = '';
-            document.getElementById('unitFormTitle').innerText = "เพิ่มหน่วยการเรียนรู้";
-            document.getElementById('unitActionBtns').innerHTML = `<button onclick="saveUnit()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-md transition">บันทึกข้อมูล</button>`;
-        }
-
-        function deleteUnit(id) {
-            if (confirm('ต้องการลบหน่วยการเรียนรู้นี้หรือไม่?')) {
-                units = units.filter(x => x.id !== id);
-                localStorage.setItem('web_units', JSON.stringify(units));
-                renderUnitTable();
+            const res = await callApi({ action: 'addUnit', name, term, link });
+            if (res.status === 'success') {
+                document.getElementById('unitName').value = '';
+                document.getElementById('unitLink').value = '';
+                refreshAdminUnits();
+                showMessage('บันทึกสำเร็จ');
             }
-        }
+        };
 
-        // --- App Interface Functions (Student) ---
-        function renderAppInterface() {
-            document.getElementById('userNameDisplay').innerText = `คุณ${currentUser.name}`;
-            const userPerms = currentUser.permissions || [];
+        window.deleteUnitGS = async (id) => {
+            if(confirm('ยืนยันการลบบทเรียน?')) {
+                await callApi({ action: 'deleteUnit', id });
+                refreshAdminUnits();
+                showMessage('ลบสำเร็จ');
+            }
+        };
+
+        // --- ระบบบทเรียน (นักเรียน) ---
+
+        function renderTermCards() {
+            const grid = document.getElementById('termCardsGrid');
+            grid.innerHTML = '';
             TERMS.forEach(t => {
-                document.getElementById(`card-${t.id}`).classList.toggle('locked', !userPerms.includes(t.id));
+                const isLocked = !currentUser.permissions?.includes(t.id);
+                const card = document.createElement('div');
+                card.className = `menu-card bg-white p-8 rounded-3xl border-2 cursor-pointer text-center relative ${isLocked ? 'locked border-gray-100' : 'border-gray-50 hover:border-indigo-400 hover:shadow-lg'}`;
+                card.onclick = () => selectTerm(t.id, t.name);
+                card.innerHTML = `
+                    <div class="w-16 h-16 mx-auto ${t.color} rounded-2xl flex items-center justify-center mb-4 text-2xl shadow-sm"><i class="fas ${t.icon}"></i></div>
+                    <h3 class="font-bold text-lg text-gray-800">${t.name}</h3>
+                `;
+                grid.appendChild(card);
             });
-            backToTerms(); // Reset view to Grid
         }
 
-        function selectTerm(el, termId, termName) {
-            if (!currentUser.permissions?.includes(termId)) {
-                showMessage('กรุณาติดต่อแอดมินเพื่อเปิดสิทธิ์', 'error');
-                return;
-            }
+        async function selectTerm(id, name) {
+            if (!currentUser.permissions?.includes(id)) return showMessage('ยังไม่มีสิทธิ์เข้าเรียนในระดับนี้', 'error');
             
-            // Switch UI
             document.getElementById('termSelectionContainer').classList.add('hidden-section');
             document.getElementById('contentDashboard').classList.remove('hidden-section');
-            document.getElementById('currentTermView').innerText = termName;
+            document.getElementById('currentTermView').innerText = name;
             
-            renderTermUnits(termId);
-        }
-
-        function backToTerms() {
-            document.getElementById('termSelectionContainer').classList.remove('hidden-section');
-            document.getElementById('contentDashboard').classList.add('hidden-section');
-        }
-
-        function renderTermUnits(termId) {
             const grid = document.getElementById('dynamicUnitGrid');
-            const emptyMsg = document.getElementById('noUnitsMsg');
-            grid.innerHTML = '';
+            grid.innerHTML = ''; 
 
-            const termUnits = units.filter(u => u.term === termId);
-
-            if (termUnits.length === 0) {
-                grid.classList.add('hidden-section');
-                emptyMsg.classList.remove('hidden-section');
-            } else {
-                grid.classList.remove('hidden-section');
-                emptyMsg.classList.add('hidden-section');
-
-                // Color themes for icons based on index
-                const colors = ['text-blue-500 bg-blue-100', 'text-green-500 bg-green-100', 'text-amber-500 bg-amber-100', 'text-pink-500 bg-pink-100', 'text-purple-500 bg-purple-100'];
-
-                termUnits.forEach((u, idx) => {
-                    const colorClass = colors[idx % colors.length];
-                    const card = document.createElement('div');
-                    card.className = "menu-card bg-white p-6 rounded-3xl shadow-sm border border-gray-100 cursor-pointer group flex flex-col items-center hover:bg-indigo-50 transition-colors";
-                    card.onclick = () => window.open(u.link, '_blank');
-                    
-                    card.innerHTML = `
-                        <div class="w-16 h-16 ${colorClass} rounded-2xl flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform">
-                            <i class="fas fa-book-open text-2xl"></i>
-                        </div>
-                        <h4 class="font-bold text-gray-800 text-center text-lg leading-tight">${u.name}</h4>
-                        <span class="text-xs font-bold text-indigo-500 mt-3 px-3 py-1 bg-indigo-50 rounded-full group-hover:bg-white transition">เข้าเรียน <i class="fas fa-arrow-right ml-1"></i></span>
+            const res = await callApi({ action: 'getUnitsByTerm', termId: id });
+            if (res.status === 'success') {
+                document.getElementById('noUnitsMsg').classList.toggle('hidden', res.data.length > 0);
+                res.data.forEach(u => {
+                    const div = document.createElement('div');
+                    div.className = "bg-white p-6 rounded-2xl border-2 border-gray-50 hover:border-indigo-500 hover:bg-indigo-50 cursor-pointer text-center group transition shadow-sm";
+                    div.onclick = () => window.open(u.link, '_blank');
+                    div.innerHTML = `
+                        <div class="mb-4 text-indigo-400 group-hover:text-indigo-600 transition"><i class="fas fa-play-circle text-4xl"></i></div>
+                        <h4 class="font-bold text-gray-700 text-sm">${u.name}</h4>
                     `;
-                    grid.appendChild(card);
+                    grid.appendChild(div);
                 });
             }
         }
 
-        // --- Auth Handlers ---
-        document.getElementById('registerForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('regEmail').value;
-            if (users.find(u => u.email === email)) return showMessage('มีอีเมลนี้อยู่แล้วในระบบ', 'error');
-            users.push({ 
-                name: document.getElementById('regName').value, 
-                email, 
-                password: document.getElementById('regPassword').value, 
-                permissions: [] 
-            });
-            localStorage.setItem('web_users', JSON.stringify(users));
-            showMessage('สมัครสมาชิกสำเร็จ!');
-            toggleSection('login');
-        });
+        window.backToTerms = () => {
+            document.getElementById('termSelectionContainer').classList.remove('hidden-section');
+            document.getElementById('contentDashboard').classList.add('hidden-section');
+        };
 
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const u = users.find(u => u.email === document.getElementById('loginEmail').value && u.password === document.getElementById('loginPassword').value);
-            if (u) { currentUser = u; toggleSection('menu'); }
-            else showMessage('ข้อมูลไม่ถูกต้อง', 'error');
-        });
+        window.switchAdminTab = (tab) => {
+            document.getElementById('tabContentUsers').classList.toggle('hidden-section', tab !== 'users');
+            document.getElementById('tabContentUnits').classList.toggle('hidden-section', tab !== 'units');
+            document.getElementById('tabUsersBtn').classList.toggle('admin-tab-active', tab === 'users');
+            document.getElementById('tabUnitsBtn').classList.toggle('admin-tab-active', tab === 'units');
+            if (tab === 'units') refreshAdminUnits();
+        };
 
-        function logout() { currentUser = null; toggleSection('login'); }
+        window.logout = () => { location.reload(); };
     </script>
 </body>
 </html>
