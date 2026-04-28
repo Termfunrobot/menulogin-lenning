@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสมาชิก - KidLearning Admin & Menu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap');
+        body {
+            font-family: 'Kanit', sans-serif;
+            background: #f8fafc;
+            min-height: 100vh;
+        }
+        .auth-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+            overflow: hidden;
+        }
+        .hidden-section {
+            display: none;
+        }
+        #messageBox {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            z-index: 1000;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        .menu-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .menu-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 15px -6px rgba(0, 0, 0, 0.1);
+        }
+        .term-card-active {
+            border: 4px solid #4f46e5 !important;
+            background-color: #f5f7ff !important;
+            position: relative;
+        }
+        .term-card-active::after {
+            content: "\f058";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            color: #4f46e5;
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Notification Message Box -->
+    <div id="messageBox"></div>
+
+    <!-- Auth Sections -->
+    <div id="authWrapper" class="auth-container">
+        <div class="glass-card p-8 shadow-2xl">
+            <!-- Login Section -->
+            <div id="loginSection">
+                <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">เข้าสู่ระบบ</h2>
+                <form id="loginForm" class="space-y-6">
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                            <i class="fas fa-envelope"></i>
+                        </span>
+                        <input type="email" id="loginEmail" required
+                            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                            placeholder="อีเมลของคุณ">
+                    </div>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        <input type="password" id="loginPassword" required
+                            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                            placeholder="รหัสผ่าน">
+                    </div>
+                    <button type="submit" 
+                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition duration-300 shadow-lg">
+                        เข้าสู่ระบบ
+                    </button>
+                </form>
+                <div class="mt-6 flex flex-col space-y-3 text-center">
+                    <p class="text-gray-600">
+                        ยังไม่มีบัญชี? 
+                        <a href="#" onclick="toggleSection('register')" class="text-indigo-600 font-semibold hover:underline">ลงทะเบียน</a>
+                    </p>
+                    <button onclick="toggleSection('admin-verify')" class="text-sm text-gray-400 hover:text-gray-600 transition">
+                        <i class="fas fa-user-shield mr-1"></i> สำหรับผู้ดูแลระบบ
+                    </button>
+                </div>
+            </div>
+
+            <!-- Admin Verification Section (New) -->
+            <div id="adminVerifySection" class="hidden-section">
+                <h2 class="text-2xl font-bold text-center text-gray-800 mb-2">ยืนยันตัวตนแอดมิน</h2>
+                <p class="text-center text-gray-500 mb-8 text-sm">กรุณากรอกรหัสผ่านเพื่อเข้าสู่ฐานข้อมูล</p>
+                <div class="space-y-4">
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                            <i class="fas fa-key"></i>
+                        </span>
+                        <input type="password" id="adminPasswordInput"
+                            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                            placeholder="รหัสผ่านแอดมิน">
+                    </div>
+                    <button onclick="checkAdminPassword()" 
+                        class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition duration-300 shadow-lg">
+                        ตกลง
+                    </button>
+                    <button onclick="toggleSection('login')" 
+                        class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold py-2 rounded-xl transition">
+                        ยกเลิก
+                    </button>
+                </div>
+            </div>
+
+            <!-- Register Section -->
+            <div id="registerSection" class="hidden-section">
+                <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">สร้างบัญชีใหม่</h2>
+                <form id="registerForm" class="space-y-4">
+                    <input type="text" id="regName" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                        placeholder="ชื่อ-นามสกุล">
+                    <input type="email" id="regEmail" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                        placeholder="อีเมล">
+                    <input type="password" id="regPassword" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                        placeholder="รหัสผ่าน">
+                    <button type="submit" 
+                        class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition duration-300 shadow-lg">
+                        สมัครสมาชิก
+                    </button>
+                </form>
+                <p class="mt-6 text-center text-gray-600">
+                    มีบัญชีอยู่แล้ว? 
+                    <a href="#" onclick="toggleSection('login')" class="text-indigo-600 font-semibold hover:underline">เข้าสู่ระบบ</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard Section -->
+    <div id="adminSection" class="hidden-section min-h-screen bg-gray-100 p-6">
+        <div class="max-w-4xl mx-auto">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-database mr-2 text-indigo-600"></i>ฐานข้อมูลผู้ใช้งาน</h2>
+                <button onclick="toggleSection('login')" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition font-medium">
+                    <i class="fas fa-sign-out-alt mr-2"></i>ออกจากโหมดแอดมิน
+                </button>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-gray-50 text-gray-500 text-sm">
+                        <tr>
+                            <th class="p-4 border-b">ชื่อ-นามสกุล</th>
+                            <th class="p-4 border-b">อีเมล</th>
+                            <th class="p-4 border-b text-center">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <!-- Data will be inserted here -->
+                    </tbody>
+                </table>
+                <div id="emptyState" class="p-10 text-center text-gray-400 hidden">
+                    <i class="fas fa-users-slash text-4xl mb-3"></i>
+                    <p>ยังไม่มีข้อมูลผู้สมัครสมาชิก</p>
+                </div>
+            </div>
+            
+            <div class="mt-6 flex justify-end space-x-4">
+                <button onclick="exportData()" class="bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition shadow-md">
+                    <i class="fas fa-file-export mr-2"></i>ส่งออกเป็น JSON
+                </button>
+                <button onclick="clearAllData()" class="bg-red-50 text-red-600 px-6 py-2 rounded-xl hover:bg-red-100 transition border border-red-200">
+                    <i class="fas fa-trash-alt mr-2"></i>ล้างข้อมูลทั้งหมด
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Section (App) -->
+    <div id="mainContent" class="hidden-section">
+        <nav class="bg-white shadow-sm px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+            <div class="flex items-center space-x-2">
+                <div class="bg-indigo-600 p-2 rounded-lg"><i class="fas fa-graduation-cap text-white text-lg"></i></div>
+                <span class="text-xl font-bold text-gray-800">KidLearning</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span id="userNameDisplay" class="hidden sm:block text-gray-600 font-medium"></span>
+                <button onclick="logout()" class="bg-red-50 text-red-500 hover:bg-red-100 px-4 py-2 rounded-xl font-semibold flex items-center space-x-1 transition">
+                    <i class="fas fa-sign-out-alt"></i><span>ออก</span>
+                </button>
+            </div>
+        </nav>
+
+        <div class="max-w-6xl mx-auto p-6 md:p-10">
+            <div class="mb-12">
+                <h1 class="text-3xl font-bold text-gray-800">แผงควบคุมการเรียนรู้ 🎒</h1>
+                <p class="text-gray-500 mt-2 text-lg">เลือกระดับชั้นเพื่อเริ่มเข้าสู่บทเรียน!</p>
+            </div>
+
+            <section id="termSelectionGrid" class="mb-12">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Cards (อ.1 - อ.3) -->
+                    <div onclick="selectTerm(this, 'อนุบาล 1 เทอม 1')" class="term-card menu-card bg-white p-8 rounded-[2rem] border-2 border-gray-100 cursor-pointer flex flex-col items-center justify-center text-center term-card-active shadow-sm">
+                        <div class="w-24 h-24 bg-yellow-100 rounded-3xl flex items-center justify-center mb-6 text-yellow-600 shadow-inner"><i class="fas fa-baby text-5xl"></i></div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">อ.1 เทอม 1</h3>
+                        <p class="text-gray-500 font-light">ก้าวแรกสู่การเรียนรู้</p>
+                    </div>
+                    <div onclick="selectTerm(this, 'อนุบาล 1 เทอม 2')" class="term-card menu-card bg-white p-8 rounded-[2rem] border-2 border-gray-100 cursor-pointer flex flex-col items-center justify-center text-center shadow-sm">
+                        <div class="w-24 h-24 bg-green-100 rounded-3xl flex items-center justify-center mb-6 text-green-600 shadow-inner"><i class="fas fa-puzzle-piece text-5xl"></i></div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">อ.1 เทอม 2</h3>
+                        <p class="text-gray-500 font-light">สนุกกับแก้ปัญหา</p>
+                    </div>
+                    <div onclick="selectTerm(this, 'อนุบาล 2 เทอม 1')" class="term-card menu-card bg-white p-8 rounded-[2rem] border-2 border-gray-100 cursor-pointer flex flex-col items-center justify-center text-center shadow-sm">
+                        <div class="w-24 h-24 bg-blue-100 rounded-3xl flex items-center justify-center mb-6 text-blue-600 shadow-inner"><i class="fas fa-pencil-ruler text-5xl"></i></div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">อ.2 เทอม 1</h3>
+                        <p class="text-gray-500 font-light">สร้างสรรค์งานเขียน</p>
+                    </div>
+                    <div onclick="selectTerm(this, 'อนุบาล 2 เทอม 2')" class="term-card menu-card bg-white p-8 rounded-[2rem] border-2 border-gray-100 cursor-pointer flex flex-col items-center justify-center text-center shadow-sm">
+                        <div class="w-24 h-24 bg-indigo-100 rounded-3xl flex items-center justify-center mb-6 text-indigo-600 shadow-inner"><i class="fas fa-globe-asia text-5xl"></i></div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">อ.2 เทอม 2</h3>
+                        <p class="text-gray-500 font-light">เรียนรู้สิ่งรอบตัว</p>
+                    </div>
+                    <div onclick="selectTerm(this, 'อนุบาล 3 เทอม 1')" class="term-card menu-card bg-white p-8 rounded-[2rem] border-2 border-gray-100 cursor-pointer flex flex-col items-center justify-center text-center shadow-sm">
+                        <div class="w-24 h-24 bg-purple-100 rounded-3xl flex items-center justify-center mb-6 text-purple-600 shadow-inner"><i class="fas fa-flask text-5xl"></i></div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">อ.3 เทอม 1</h3>
+                        <p class="text-gray-500 font-light">ทดลองวิทยาศาสตร์</p>
+                    </div>
+                    <div onclick="selectTerm(this, 'อนุบาล 3 เทอม 2')" class="term-card menu-card bg-white p-8 rounded-[2rem] border-2 border-gray-100 cursor-pointer flex flex-col items-center justify-center text-center shadow-sm">
+                        <div class="w-24 h-24 bg-red-100 rounded-3xl flex items-center justify-center mb-6 text-red-600 shadow-inner"><i class="fas fa-graduation-cap text-5xl"></i></div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">อ.3 เทอม 2</h3>
+                        <p class="text-gray-500 font-light">พร้อมก้าวสู่ประถม</p>
+                    </div>
+                </div>
+            </section>
+
+            <hr class="border-gray-200 mb-16">
+
+            <!-- Function Menu -->
+            <section id="contentDashboard">
+                <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-10 gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">ฟังก์ชันหลัก</h2>
+                        <p class="text-gray-500">สำหรับระดับชั้น: <span id="currentTermView" class="text-indigo-600 font-bold underline">อนุบาล 1 เทอม 1</span></p>
+                    </div>
+                </header>
+
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="menu-card bg-white p-8 rounded-3xl shadow-sm border border-gray-50 cursor-pointer text-center group">
+                        <div class="w-14 h-14 bg-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4 text-white shadow-lg group-hover:scale-110 transition-transform"><i class="fas fa-play text-xl"></i></div>
+                        <h4 class="font-bold text-gray-800">เข้าเรียน</h4>
+                    </div>
+                    <div class="menu-card bg-white p-8 rounded-3xl shadow-sm border border-gray-50 cursor-pointer text-center group">
+                        <div class="w-14 h-14 bg-green-500 rounded-2xl flex items-center justify-center mx-auto mb-4 text-white shadow-lg group-hover:scale-110 transition-transform"><i class="fas fa-tasks text-xl"></i></div>
+                        <h4 class="font-bold text-gray-800">ส่งการบ้าน</h4>
+                    </div>
+                    <div class="menu-card bg-white p-8 rounded-3xl shadow-sm border border-gray-50 cursor-pointer text-center group">
+                        <div class="w-14 h-14 bg-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-4 text-white shadow-lg group-hover:scale-110 transition-transform"><i class="fas fa-trophy text-xl"></i></div>
+                        <h4 class="font-bold text-gray-800">ความสำเร็จ</h4>
+                    </div>
+                    <div class="menu-card bg-white p-8 rounded-3xl shadow-sm border border-gray-50 cursor-pointer text-center group">
+                        <div class="w-14 h-14 bg-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4 text-white shadow-lg group-hover:scale-110 transition-transform"><i class="fas fa-heart text-xl"></i></div>
+                        <h4 class="font-bold text-gray-800">สมุดพก</h4>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        // --- ฐานข้อมูลเบื้องต้น ---
+        let users = JSON.parse(localStorage.getItem('web_users')) || [];
+        const ADMIN_PASSWORD = "1471200"; // รหัสผ่านแอดมินตามที่กำหนด
+
+        function showMessage(text, type = 'success') {
+            const box = document.getElementById('messageBox');
+            box.innerText = text;
+            box.style.display = 'block';
+            box.style.backgroundColor = type === 'success' ? '#10B981' : '#EF4444';
+            setTimeout(() => { box.style.display = 'none'; }, 2500);
+        }
+
+        function toggleSection(section) {
+            const sections = ['authWrapper', 'loginSection', 'registerSection', 'mainContent', 'adminSection', 'adminVerifySection'];
+            sections.forEach(s => {
+                const el = document.getElementById(s);
+                if(el) el.classList.add('hidden-section');
+            });
+
+            if (section === 'login') {
+                document.getElementById('authWrapper').classList.remove('hidden-section');
+                document.getElementById('loginSection').classList.remove('hidden-section');
+            } else if (section === 'register') {
+                document.getElementById('authWrapper').classList.remove('hidden-section');
+                document.getElementById('registerSection').classList.remove('hidden-section');
+            } else if (section === 'admin-verify') {
+                document.getElementById('authWrapper').classList.remove('hidden-section');
+                document.getElementById('adminVerifySection').classList.remove('hidden-section');
+                document.getElementById('adminPasswordInput').value = ''; // ล้างรหัสผ่านเก่า
+            } else if (section === 'menu') {
+                document.getElementById('mainContent').classList.remove('hidden-section');
+            } else if (section === 'admin') {
+                renderUserTable();
+                document.getElementById('adminSection').classList.remove('hidden-section');
+            }
+        }
+
+        // --- ระบบตรวจสอบแอดมิน ---
+        function checkAdminPassword() {
+            const pass = document.getElementById('adminPasswordInput').value;
+            if (pass === ADMIN_PASSWORD) {
+                showMessage('ยินดีต้อนรับแอดมิน');
+                toggleSection('admin');
+            } else {
+                showMessage('รหัสผ่านแอดมินไม่ถูกต้อง!', 'error');
+            }
+        }
+
+        // --- จัดการตารางแอดมิน ---
+        function renderUserTable() {
+            const tbody = document.getElementById('userTableBody');
+            const empty = document.getElementById('emptyState');
+            tbody.innerHTML = '';
+            
+            if (users.length === 0) {
+                empty.classList.remove('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
+
+            users.forEach((user, index) => {
+                const row = `
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="p-4 border-b font-medium text-gray-700">${user.name}</td>
+                        <td class="p-4 border-b text-gray-500">${user.email}</td>
+                        <td class="p-4 border-b text-center">
+                            <button onclick="deleteUser(${index})" class="text-red-500 hover:text-red-700 transition p-2">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function deleteUser(index) {
+            // ใช้ UI message box แทน alert เพื่อความสวยงาม
+            if (confirm('ยืนยันการลบข้อมูลผู้ใช้งานนี้?')) {
+                users.splice(index, 1);
+                localStorage.setItem('web_users', JSON.stringify(users));
+                renderUserTable();
+                showMessage('ลบข้อมูลเรียบร้อย');
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('คุณต้องการลบข้อมูลผู้ใช้ "ทั้งหมด" ใช่หรือไม่?')) {
+                users = [];
+                localStorage.setItem('web_users', JSON.stringify(users));
+                renderUserTable();
+                showMessage('ล้างข้อมูลสำเร็จ');
+            }
+        }
+
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(users, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "kidlearning_backup.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+            showMessage('ดาวน์โหลดข้อมูลสำเร็จ');
+        }
+
+        // --- ระบบแอปหลัก ---
+        function selectTerm(element, termName) {
+            document.querySelectorAll('.term-card').forEach(card => card.classList.remove('term-card-active'));
+            element.classList.add('term-card-active');
+            document.getElementById('currentTermView').innerText = termName;
+            showMessage(`สลับเป็น: ${termName}`);
+            if(window.innerWidth < 768) document.getElementById('contentDashboard').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+
+            if (users.find(u => u.email === email)) {
+                showMessage('อีเมลนี้มีในระบบแล้ว', 'error');
+                return;
+            }
+
+            users.push({ name, email, password, createdAt: new Date().toLocaleString('th-TH') });
+            localStorage.setItem('web_users', JSON.stringify(users));
+            showMessage('ลงทะเบียนสำเร็จแล้ว!');
+            toggleSection('login');
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const user = users.find(u => u.email === email && u.password === password);
+
+            if (user) {
+                document.getElementById('userNameDisplay').innerText = `คุณ${user.name}`;
+                toggleSection('menu');
+            } else {
+                showMessage('อีเมลหรือรหัสผ่านผิดพลาด', 'error');
+            }
+        });
+
+        function logout() {
+            toggleSection('login');
+            showMessage('ออกจากระบบแล้ว');
+        }
+    </script>
+</body>
+</html>
