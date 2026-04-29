@@ -8,7 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap');
-        body { font-family: 'Kanit', sans-serif; background: #f8fafc; min-height: 100vh; }
+        body { font-family: 'Kanit', sans-serif; background: #f8fafc; min-height: 100vh; display: flex; flex-direction: column; }
         .auth-container { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); width: 100%; max-width: 400px; overflow: hidden; }
         .hidden-section { display: none !important; }
@@ -22,6 +22,7 @@
         .admin-tab-active { border-bottom: 3px solid #4f46e5; color: #4f46e5; }
         .demo-banner { background: linear-gradient(90deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%); transition: transform 0.2s; }
         .demo-banner:hover { transform: scale(1.01); }
+        footer { margin-top: auto; }
     </style>
 </head>
 <body>
@@ -38,54 +39,61 @@
 
     <!-- ส่วน Authentication -->
     <div id="authWrapper" class="auth-container">
-        <div class="glass-card p-8">
-            <!-- ส่วนเข้าสู่ระบบ -->
-            <div id="loginSection">
-                <h2 class="text-2xl font-bold text-center mb-8 text-indigo-700">เข้าสู่ระบบ</h2>
-                <form id="loginForm" class="space-y-6">
-                    <input type="email" id="loginEmail" required class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-400 outline-none" placeholder="อีเมล">
-                    <input type="password" id="loginPassword" required class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-400 outline-none" placeholder="รหัสผ่าน">
-                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition">เข้าสู่ระบบ</button>
-                </form>
-                <div class="mt-6 text-center space-y-3">
-                    <p class="text-sm text-gray-600">ยังไม่มีบัญชี? <a href="#" onclick="toggleSection('register')" class="text-indigo-600 font-bold">ลงทะเบียน</a></p>
-                    <button onclick="toggleSection('admin-verify')" class="text-xs text-gray-400 hover:text-gray-600">สำหรับผู้ดูแลระบบ</button>
+        <div class="flex flex-col items-center w-full">
+            <div class="glass-card p-8 mb-8">
+                <!-- ส่วนเข้าสู่ระบบ -->
+                <div id="loginSection">
+                    <h2 class="text-2xl font-bold text-center mb-8 text-indigo-700">เข้าสู่ระบบ</h2>
+                    <form id="loginForm" class="space-y-6">
+                        <input type="email" id="loginEmail" required class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-400 outline-none" placeholder="อีเมล">
+                        <input type="password" id="loginPassword" required class="w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-400 outline-none" placeholder="รหัสผ่าน">
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition">เข้าสู่ระบบ</button>
+                    </form>
+                    <div class="mt-6 text-center space-y-3">
+                        <p class="text-sm text-gray-600">ยังไม่มีบัญชี? <a href="#" onclick="toggleSection('register')" class="text-indigo-600 font-bold">ลงทะเบียน</a></p>
+                        <button onclick="toggleSection('admin-verify')" class="text-xs text-gray-400 hover:text-gray-600">สำหรับผู้ดูแลระบบ</button>
+                    </div>
+                </div>
+
+                <!-- ส่วนยืนยันตัวตนแอดมิน -->
+                <div id="adminVerifySection" class="hidden-section text-center">
+                    <h2 class="text-xl font-bold mb-6 text-purple-700">ยืนยันสิทธิ์แอดมิน</h2>
+                    <input type="password" id="adminPasswordInput" class="w-full px-4 py-3 border rounded-xl mb-4" placeholder="กรอกรหัสผ่านแอดมิน">
+                    <button onclick="checkAdminPassword()" class="w-full bg-purple-600 text-white font-bold py-3 rounded-xl">ตกลง</button>
+                    <button onclick="toggleSection('login')" class="w-full mt-2 text-gray-500 text-sm">ยกเลิก</button>
+                </div>
+
+                <!-- ส่วนลงทะเบียน -->
+                <div id="registerSection" class="hidden-section">
+                    <h2 class="text-2xl font-bold text-center mb-8 text-green-700">สร้างบัญชีใหม่</h2>
+                    <form id="registerForm" class="space-y-4">
+                        <div class="space-y-1">
+                            <label class="text-xs text-gray-500 ml-1">ชื่อ-นามสกุล (คอลัมน์ A)</label>
+                            <input type="text" id="regName" required class="w-full px-4 py-3 border rounded-xl" placeholder="ชื่อของคุณ">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs text-gray-500 ml-1">อีเมล (คอลัมน์ B)</label>
+                            <input type="email" id="regEmail" required class="w-full px-4 py-3 border rounded-xl" placeholder="example@email.com">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs text-gray-500 ml-1">กำหนดรหัสผ่าน</label>
+                            <input type="password" id="regPassword" required class="w-full px-4 py-3 border rounded-xl" placeholder="รหัสผ่าน">
+                        </div>
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition shadow-lg">สมัครสมาชิก</button>
+                    </form>
+                    <p class="mt-6 text-center"><a href="#" onclick="toggleSection('login')" class="text-sm text-indigo-600 font-medium">กลับหน้าเข้าสู่ระบบ</a></p>
                 </div>
             </div>
-
-            <!-- ส่วนยืนยันตัวตนแอดมิน -->
-            <div id="adminVerifySection" class="hidden-section text-center">
-                <h2 class="text-xl font-bold mb-6 text-purple-700">ยืนยันสิทธิ์แอดมิน</h2>
-                <input type="password" id="adminPasswordInput" class="w-full px-4 py-3 border rounded-xl mb-4" placeholder="กรอกรหัสผ่านแอดมิน">
-                <button onclick="checkAdminPassword()" class="w-full bg-purple-600 text-white font-bold py-3 rounded-xl">ตกลง</button>
-                <button onclick="toggleSection('login')" class="w-full mt-2 text-gray-500 text-sm">ยกเลิก</button>
-            </div>
-
-            <!-- ส่วนลงทะเบียน -->
-            <div id="registerSection" class="hidden-section">
-                <h2 class="text-2xl font-bold text-center mb-8 text-green-700">สร้างบัญชีใหม่</h2>
-                <form id="registerForm" class="space-y-4">
-                    <div class="space-y-1">
-                        <label class="text-xs text-gray-500 ml-1">ชื่อ-นามสกุล (คอลัมน์ A)</label>
-                        <input type="text" id="regName" required class="w-full px-4 py-3 border rounded-xl" placeholder="ชื่อของคุณ">
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-xs text-gray-500 ml-1">อีเมล (คอลัมน์ B)</label>
-                        <input type="email" id="regEmail" required class="w-full px-4 py-3 border rounded-xl" placeholder="example@email.com">
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-xs text-gray-500 ml-1">กำหนดรหัสผ่าน</label>
-                        <input type="password" id="regPassword" required class="w-full px-4 py-3 border rounded-xl" placeholder="รหัสผ่าน">
-                    </div>
-                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition shadow-lg">สมัครสมาชิก</button>
-                </form>
-                <p class="mt-6 text-center"><a href="#" onclick="toggleSection('login')" class="text-sm text-indigo-600 font-medium">กลับหน้าเข้าสู่ระบบ</a></p>
+            <!-- ติดต่อด้านล่างหน้า Login -->
+            <div class="text-white text-center">
+                <p class="font-bold text-lg mb-2">ห้องเรียนแสนสนุก</p>
+                <p class="text-sm opacity-90">ติดต่อสั่งซื้อ: อ.วุฒิ แอดไลน์ หรือ โทร 084-7999639</p>
             </div>
         </div>
     </div>
 
     <!-- ส่วน Dashboard นักเรียน -->
-    <div id="mainContent" class="hidden-section">
+    <div id="mainContent" class="hidden-section flex-grow">
         <nav class="bg-white shadow-sm px-6 py-4 flex justify-between items-center sticky top-0 z-50">
             <span class="text-xl font-bold text-indigo-600"><i class="fas fa-graduation-cap mr-2"></i>KidLearning</span>
             <div class="flex items-center space-x-4">
@@ -95,7 +103,7 @@
         </nav>
         
         <div class="max-w-6xl mx-auto p-6 md:p-10">
-            <!-- ส่วนหน้าทดลองเรียนที่เพิ่มใหม่ -->
+            <!-- ส่วนหน้าทดลองเรียน -->
             <div id="demoSection" class="mb-10">
                 <a href="https://termfunrobot.github.io/Demo-lenning2026-/" target="_blank" class="demo-banner block p-6 rounded-3xl shadow-md border-b-4 border-pink-200">
                     <div class="flex items-center justify-between">
@@ -137,7 +145,7 @@
     </div>
 
     <!-- ส่วน Dashboard ผู้ดูแลระบบ (Admin) -->
-    <div id="adminSection" class="hidden-section min-h-screen bg-gray-100 p-6">
+    <div id="adminSection" class="hidden-section min-h-screen bg-gray-100 p-6 flex-grow">
         <div class="max-w-6xl mx-auto">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-user-shield mr-2"></i>แผงจัดการข้อมูล</h2>
@@ -201,6 +209,19 @@
         </div>
     </div>
 
+    <!-- Footer ส่วนกลางทุกหน้า -->
+    <footer id="globalFooter" class="bg-white border-t py-8 mt-auto hidden-section">
+        <div class="max-w-6xl mx-auto px-6 text-center">
+            <h3 class="text-xl font-bold text-indigo-600 mb-2">ห้องเรียนแสนสนุก</h3>
+            <div class="flex flex-col md:flex-row items-center justify-center gap-4 text-gray-600">
+                <span class="flex items-center"><i class="fab fa-line text-green-500 text-xl mr-2"></i> ติดต่อสั่งซื้อ: อ.วุฒิ</span>
+                <span class="hidden md:inline">|</span>
+                <span class="flex items-center"><i class="fas fa-phone-alt text-indigo-500 mr-2"></i> โทร 084-7999639</span>
+            </div>
+            <p class="mt-4 text-xs text-gray-400">&copy; 2026 KidLearning Online System. All rights reserved.</p>
+        </div>
+    </footer>
+
     <script>
         /** * สำคัญ: เปลี่ยน URL เป็น Web App URL ที่คุณได้จากการ Deploy Google Apps Script 
          */
@@ -248,6 +269,10 @@
             document.querySelectorAll('#authWrapper, #loginSection, #registerSection, #mainContent, #adminSection, #adminVerifySection')
                 .forEach(el => el.classList.add('hidden-section'));
             
+            // ซ่อน Footer ในหน้า Login เพื่อความสวยงาม (เพราะมีข้อความทับซ้อนอยู่แล้ว)
+            const footer = document.getElementById('globalFooter');
+            footer.classList.add('hidden-section');
+
             if (section === 'login') {
                 document.getElementById('authWrapper').classList.remove('hidden-section');
                 document.getElementById('loginSection').classList.remove('hidden-section');
@@ -259,9 +284,11 @@
                 document.getElementById('adminVerifySection').classList.remove('hidden-section');
             } else if (section === 'menu') {
                 document.getElementById('mainContent').classList.remove('hidden-section');
+                footer.classList.remove('hidden-section');
                 renderTermCards();
             } else if (section === 'admin') {
                 document.getElementById('adminSection').classList.remove('hidden-section');
+                footer.classList.remove('hidden-section');
                 refreshAdminUsers();
             }
         };
